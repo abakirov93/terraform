@@ -181,6 +181,29 @@ func TestStatePersist(t *testing.T) {
 			},
 			noRequest: true,
 		},
+		testCase{
+			name: "reset serial (force push style)",
+			mutationFunc: func(mgr *State) (*states.State, func()) {
+				mgr.serial = 2
+				return mgr.State(), func() {}
+			},
+			expectedRequest: mockClientRequest{
+				Method: "Put",
+				Content: map[string]interface{}{
+					"version":           4.0, // encoding/json decodes this as float64 by default
+					"lineage":           "mock-lineage",
+					"serial":            3.0, // encoding/json decodes this as float64 by default
+					"terraform_version": version.Version,
+					"outputs": map[string]interface{}{
+						"foo": map[string]interface{}{
+							"type":  "string",
+							"value": "baz",
+						},
+					},
+					"resources": []interface{}{},
+				},
+			},
+		},
 	}
 
 	// Initial setup of state just to give us a fixed starting point for our
